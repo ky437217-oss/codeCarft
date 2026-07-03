@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeCraft - Build, Ship, Scale</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --neon: #00f5d4; --neon-dim: #00d4b8; --neon-glow: rgba(0, 245, 212, 0.3);
+            --magenta: #ff006e; --magenta-dim: #d9005e; --magenta-glow: rgba(255, 0, 110, 0.3);
+            --amber: #ffbe0b; --amber-dim: #e6ab0a; --amber-glow: rgba(255, 190, 11, 0.3);
+            --violet: #8338ec; --violet-dim: #6f2ec9; --violet-glow: rgba(131, 56, 236, 0.3);
+            --bg: #0a0a0f; --bg-elevated: #12121a; --bg-card: #1a1a24; --bg-hover: #22222e;
+            --text: #f0f0f5; --text-dim: #a0a0b0; --text-muted: #6a6a7a;
+            --border: #2a2a3a; --border-hover: #3a3a4a;
+            --gradient-neon: linear-gradient(135deg, #00f5d4 0%, #00bbf9 100%);
+            --gradient-magenta: linear-gradient(135deg, #ff006e 0%, #fb5607 100%);
+            --gradient-amber: linear-gradient(135deg, #ffbe0b 0%, #ff006e 100%);
+            --gradient-violet: linear-gradient(135deg, #8338ec 0%, #3a86ff 100%);
+            --glass: rgba(26, 26, 36, 0.8); --glass-border: rgba(255, 255, 255, 0.06);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; line-height: 1.6; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--neon-dim); border-radius: 3px; }
+
+        .noise-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; opacity: 0.03; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"); }
+
+        .grid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background-image: linear-gradient(rgba(0, 245, 212, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 245, 212, 0.03) 1px, transparent 1px); background-size: 60px 60px; }
+
+        .cursor-glow { position: fixed; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(0, 245, 212, 0.08) 0%, transparent 70%); pointer-events: none; z-index: 0; transform: translate(-50%, -50%); transition: all 0.1s ease; }
+
+        .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 1.2rem 2rem; background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(30px); border-bottom: 1px solid var(--glass-border); transition: all 0.3s ease; }
+        .navbar.scrolled { padding: 0.8rem 2rem; background: rgba(10, 10, 15, 0.95); }
+        .nav-inner { max-width: 1440px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .brand { display: flex; align-items: center; gap: 0.75rem; font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--text); text-decoration: none; letter-spacing: -0.5px; }
+        .brand-mark { width: 36px; height: 36px; background: var(--gradient-neon); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; box-shadow: 0 0 20px var(--neon-glow); }
+        .nav-menu { display: flex; gap: 2.5rem; list-style: none; }
+        .nav-menu a { color: var(--text-dim); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: all 0.3s ease; position: relative; font-family: 'Space Grotesk', sans-serif; }
+        .nav-menu a:hover { color: var(--neon); }
+        .nav-menu a::after { content: ''; position: absolute; bottom: -6px; left: 0; width: 0; height: 2px; background: var(--gradient-neon); transition: width 0.3s ease; border-radius: 2px; }
+        .nav-menu a:hover::after { width: 100%; }
+        .nav-cta { display: flex; gap: 1rem; align-items: center; }
+        .btn { padding: 0.65rem 1.4rem; border-radius: 10px; font-weight: 600; font-size: 0.88rem; cursor: pointer; transition: all 0.3s ease; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-family: 'Space Grotesk', sans-serif; }
+        .btn-neon { background: var(--gradient-neon); color: var(--bg); box-shadow: 0 0 20px var(--neon-glow); font-weight: 700; }
+        .btn-neon:hover { transform: translateY(-2px); box-shadow: 0 0 30px var(--neon-glow), 0 0 60px rgba(0, 245, 212, 0.15); }
+        .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+        .btn-ghost:hover { border-color: var(--neon); color: var(--neon); background: rgba(0, 245, 212, 0.05); }
+        .btn-magenta { background: var(--gradient-magenta); color: white; box-shadow: 0 0 20px var(--magenta-glow); }
+        .btn-magenta:hover { transform: translateY(-2px); box-shadow: 0 0 30px var(--magenta-glow); }
+        .mobile-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.4rem; cursor: pointer; }
+
+        .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; padding: 8rem 2rem 4rem; overflow: hidden; }
+        .hero-inner { max-width: 1100px; text-align: center; z-index: 1; }
+        .hero-pill { display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.5rem 1.2rem; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 50px; font-size: 0.82rem; color: var(--neon); margin-bottom: 2.5rem; backdrop-filter: blur(10px); font-family: 'Fira Code', monospace; }
+        .hero-pill .dot { width: 6px; height: 6px; background: var(--neon); border-radius: 50%; animation: neonPulse 2s infinite; box-shadow: 0 0 10px var(--neon); }
+        @keyframes neonPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .hero h1 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(3rem, 7vw, 6rem); font-weight: 700; line-height: 1.05; margin-bottom: 1.5rem; letter-spacing: -2px; }
+        .hero h1 .line1 { color: var(--text); }
+        .hero h1 .line2 { background: var(--gradient-neon); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero h1 .line3 { background: var(--gradient-magenta); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero-desc { font-size: 1.2rem; color: var(--text-dim); max-width: 650px; margin: 0 auto 2.5rem; line-height: 1.7; }
+        .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem; }
+        .hero-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; max-width: 700px; margin: 0 auto; padding: 2rem; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; backdrop-filter: blur(10px); }
+        .metric { text-align: center; }
+        .metric-val { font-family: 'Fira Code', monospace; font-size: 2.2rem; font-weight: 700; background: var(--gradient-neon); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .metric-label { color: var(--text-muted); font-size: 0.8rem; margin-top: 0.3rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        .hero-code { max-width: 750px; margin: 3rem auto 0; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 40px rgba(0, 245, 212, 0.05); }
+        .code-bar { display: flex; align-items: center; gap: 0.5rem; padding: 0.8rem 1.2rem; background: rgba(0,0,0,0.4); border-bottom: 1px solid var(--border); }
+        .code-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .code-dot.r { background: var(--magenta); }
+        .code-dot.y { background: var(--amber); }
+        .code-dot.g { background: var(--neon); }
+        .code-title { margin-left: 0.5rem; font-size: 0.75rem; color: var(--text-muted); font-family: 'Fira Code', monospace; }
+        .code-body { padding: 1.8rem; font-family: 'Fira Code', monospace; font-size: 0.85rem; line-height: 1.9; min-height: 220px; }
+        .code-line { opacity: 0; animation: lineIn 0.6s forwards; }
+        .code-line:nth-child(1) { animation-delay: 0.6s; }
+        .code-line:nth-child(2) { animation-delay: 1.4s; }
+        .code-line:nth-child(3) { animation-delay: 2.2s; }
+        .code-line:nth-child(4) { animation-delay: 3.0s; }
+        .code-line:nth-child(5) { animation-delay: 3.8s; }
+        .code-line:nth-child(6) { animation-delay: 4.6s; }
+        @keyframes lineIn { to { opacity: 1; } }
+        .code-prompt { color: var(--neon); }
+        .code-cmd { color: var(--text); }
+        .code-out { color: var(--text-muted); }
+        .code-blink { display: inline-block; width: 7px; height: 14px; background: var(--neon); animation: blinkCursor 1s infinite; vertical-align: middle; margin-left: 2px; box-shadow: 0 0 8px var(--neon); }
+        @keyframes blinkCursor { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+        section { padding: 7rem 2rem; position: relative; }
+        .sec-head { text-align: center; max-width: 720px; margin: 0 auto 4.5rem; }
+        .sec-tag { display: inline-block; padding: 0.35rem 1rem; background: rgba(0, 245, 212, 0.1); border: 1px solid rgba(0, 245, 212, 0.2); color: var(--neon); border-radius: 50px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1.2rem; font-family: 'Fira Code', monospace; }
+        .sec-head h2 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(2.2rem, 4.5vw, 3.5rem); font-weight: 700; margin-bottom: 1rem; letter-spacing: -1px; }
+        .sec-head p { color: var(--text-dim); font-size: 1.1rem; line-height: 1.7; }
+        .wrap { max-width: 1440px; margin: 0 auto; }
+
+        .stack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 1.2rem; }
+        .stack-card { background: var(--glass); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 18px; padding: 2rem; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
+        .stack-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--gradient-neon); transform: scaleX(0); transition: transform 0.4s ease; }
+        .stack-card:hover::before { transform: scaleX(1); }
+        .stack-card:hover { transform: translateY(-6px); border-color: rgba(0, 245, 212, 0.2); box-shadow: 0 25px 50px rgba(0,0,0,0.4), 0 0 30px rgba(0, 245, 212, 0.05); }
+        .stack-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1.2rem; position: relative; }
+        .stack-icon.js { background: rgba(247, 223, 30, 0.1); color: #f7df1e; box-shadow: 0 0 15px rgba(247, 223, 30, 0.1); }
+        .stack-icon.ts { background: rgba(49, 120, 198, 0.1); color: #3178c6; box-shadow: 0 0 15px rgba(49, 120, 198, 0.1); }
+        .stack-icon.react { background: rgba(97, 218, 251, 0.1); color: #61dafb; box-shadow: 0 0 15px rgba(97, 218, 251, 0.1); }
+        .stack-icon.vue { background: rgba(65, 184, 131, 0.1); color: #41b883; box-shadow: 0 0 15px rgba(65, 184, 131, 0.1); }
+        .stack-icon.node { background: rgba(83, 158, 67, 0.1); color: #539e43; box-shadow: 0 0 15px rgba(83, 158, 67, 0.1); }
+        .stack-icon.py { background: rgba(55, 118, 171, 0.1); color: #3776ab; box-shadow: 0 0 15px rgba(55, 118, 171, 0.1); }
+        .stack-icon.go { background: rgba(0, 173, 216, 0.1); color: #00add8; box-shadow: 0 0 15px rgba(0, 173, 216, 0.1); }
+        .stack-icon.rs { background: rgba(222, 165, 132, 0.1); color: #dea584; box-shadow: 0 0 15px rgba(222, 165, 132, 0.1); }
+        .stack-icon.docker { background: rgba(36, 150, 237, 0.1); color: #2496ed; box-shadow: 0 0 15px rgba(36, 150, 237, 0.1); }
+        .stack-icon.k8s { background: rgba(50, 108, 229, 0.1); color: #326ce5; box-shadow: 0 0 15px rgba(50, 108, 229, 0.1); }
+        .stack-icon.aws { background: rgba(255, 153, 0, 0.1); color: #ff9900; box-shadow: 0 0 15px rgba(255, 153, 0, 0.1); }
+        .stack-icon.git { background: rgba(240, 80, 50, 0.1); color: #f05032; box-shadow: 0 0 15px rgba(240, 80, 50, 0.1); }
+        .stack-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; margin-bottom: 0.4rem; }
+        .stack-card p { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.2rem; line-height: 1.6; }
+        .stack-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+        .stack-tag { padding: 0.25rem 0.7rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 50px; font-size: 0.7rem; color: var(--text-muted); font-family: 'Fira Code', monospace; }
+
+        .feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; }
+        .feat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; position: relative; overflow: hidden; transition: all 0.4s ease; }
+        .feat-card:hover { border-color: var(--neon); transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .feat-card .feat-num { position: absolute; top: 1.5rem; right: 1.5rem; font-family: 'Fira Code', monospace; font-size: 2.5rem; font-weight: 700; color: rgba(0, 245, 212, 0.08); }
+        .feat-ico { width: 48px; height: 48px; border-radius: 12px; background: var(--gradient-neon); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--bg); margin-bottom: 1.5rem; box-shadow: 0 0 20px var(--neon-glow); }
+        .feat-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; margin-bottom: 0.8rem; }
+        .feat-card p { color: var(--text-dim); line-height: 1.7; font-size: 0.95rem; }
+        .feat-list { list-style: none; margin-top: 1.2rem; }
+        .feat-list li { display: flex; align-items: center; gap: 0.7rem; padding: 0.4rem 0; color: var(--text-dim); font-size: 0.9rem; }
+        .feat-list li i { color: var(--neon); font-size: 0.7rem; }
+
+        .code-playground { background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.5); }
+        .play-tabs { display: flex; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+        .play-tabs::-webkit-scrollbar { display: none; }
+        .play-tab { padding: 1rem 1.8rem; background: none; border: none; color: var(--text-muted); font-family: 'Fira Code', monospace; font-size: 0.82rem; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; position: relative; font-weight: 500; }
+        .play-tab.active { color: var(--neon); background: rgba(0, 245, 212, 0.05); }
+        .play-tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--gradient-neon); box-shadow: 0 0 10px var(--neon); }
+        .play-body { padding: 2rem; font-family: 'Fira Code', monospace; font-size: 0.85rem; line-height: 1.9; overflow-x: auto; }
+        .play-panel { display: none; }
+        .play-panel.active { display: block; }
+        .tok-kw { color: #ff79c6; }
+        .tok-fn { color: #8be9fd; }
+        .tok-str { color: #f1fa8c; }
+        .tok-cmt { color: #6272a4; font-style: italic; }
+        .tok-num { color: #bd93f9; }
+        .tok-cls { color: #ffb86c; }
+        .tok-op { color: #ff79c6; }
+        .tok-var { color: #f8f8f2; }
+        .tok-prop { color: #50fa7b; }
+
+        .proj-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.8rem; }
+        .proj-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; transition: all 0.4s ease; }
+        .proj-card:hover { transform: translateY(-8px); border-color: var(--neon); box-shadow: 0 25px 50px rgba(0,0,0,0.4), 0 0 30px rgba(0, 245, 212, 0.05); }
+        .proj-img { height: 200px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .proj-img::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, transparent 40%, var(--bg-card) 100%); }
+        .proj-img i { font-size: 3.5rem; color: rgba(255,255,255,0.15); position: relative; z-index: 1; }
+        .proj-body { padding: 1.5rem 2rem 2rem; }
+        .proj-meta { display: flex; gap: 1.2rem; margin-bottom: 0.8rem; flex-wrap: wrap; }
+        .proj-meta span { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--text-muted); font-family: 'Fira Code', monospace; }
+        .proj-meta span i { color: var(--amber); font-size: 0.7rem; }
+        .proj-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; margin-bottom: 0.6rem; }
+        .proj-card p { color: var(--text-dim); font-size: 0.92rem; margin-bottom: 1.2rem; line-height: 1.6; }
+        .proj-links { display: flex; gap: 1.2rem; }
+        .proj-links a { display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.3s ease; font-family: 'Fira Code', monospace; }
+        .proj-links a:hover { color: var(--neon); }
+
+        .comm-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.2rem; margin-bottom: 4rem; }
+        .comm-stat { background: var(--glass); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 2rem; text-align: center; transition: all 0.3s ease; }
+        .comm-stat:hover { transform: translateY(-5px); border-color: var(--neon); box-shadow: 0 0 30px rgba(0, 245, 212, 0.05); }
+        .comm-stat i { font-size: 2rem; margin-bottom: 1rem; background: var(--gradient-neon); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .comm-stat .num { font-family: 'Fira Code', monospace; font-size: 2.2rem; font-weight: 700; color: var(--text); }
+        .comm-stat .lbl { color: var(--text-muted); font-size: 0.82rem; margin-top: 0.4rem; }
+
+        .testi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem; }
+        .testi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; position: relative; transition: all 0.3s ease; }
+        .testi-card:hover { border-color: var(--neon); }
+        .testi-card::before { content: '"'; position: absolute; top: 1rem; right: 1.5rem; font-size: 4rem; color: rgba(0, 245, 212, 0.08); font-family: serif; line-height: 1; }
+        .testi-txt { color: var(--text-dim); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1.5rem; }
+        .testi-auth { display: flex; align-items: center; gap: 1rem; }
+        .testi-av { width: 44px; height: 44px; border-radius: 50%; background: var(--gradient-neon); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--bg); font-size: 0.9rem; font-family: 'Space Grotesk', sans-serif; }
+        .testi-info h4 { font-size: 0.95rem; margin-bottom: 0.15rem; font-family: 'Space Grotesk', sans-serif; }
+        .testi-info span { font-size: 0.8rem; color: var(--text-muted); }
+
+        .res-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.2rem; }
+        .res-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; display: flex; gap: 1.2rem; transition: all 0.3s ease; cursor: pointer; }
+        .res-card:hover { border-color: var(--neon); transform: translateX(6px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .res-ico { width: 48px; height: 48px; min-width: 48px; border-radius: 12px; background: var(--gradient-violet); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: white; box-shadow: 0 0 15px var(--violet-glow); }
+        .res-info h4 { font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; margin-bottom: 0.4rem; }
+        .res-info p { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.6rem; line-height: 1.5; }
+        .res-meta { display: flex; gap: 1rem; font-size: 0.75rem; color: var(--text-muted); font-family: 'Fira Code', monospace; }
+
+        .road-wrap { position: relative; max-width: 800px; margin: 0 auto; }
+        .road-wrap::before { content: ''; position: absolute; left: 50%; transform: translateX(-50%); width: 2px; height: 100%; background: var(--gradient-neon); opacity: 0.3; }
+        .road-item { display: flex; justify-content: flex-end; padding-right: 50%; position: relative; margin-bottom: 3rem; }
+        .road-item:nth-child(even) { justify-content: flex-start; padding-right: 0; padding-left: 50%; }
+        .road-dot { position: absolute; left: 50%; transform: translateX(-50%); width: 16px; height: 16px; background: var(--neon); border-radius: 50%; border: 3px solid var(--bg); z-index: 1; box-shadow: 0 0 15px var(--neon-glow); }
+        .road-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem 2rem; max-width: 340px; margin: 0 2rem; position: relative; transition: all 0.3s ease; }
+        .road-content:hover { border-color: var(--neon); }
+        .road-content::after { content: ''; position: absolute; top: 18px; width: 0; height: 0; border: 8px solid transparent; }
+        .road-item:nth-child(odd) .road-content::after { right: -16px; border-left-color: var(--border); }
+        .road-item:nth-child(even) .road-content::after { left: -16px; border-right-color: var(--border); }
+        .road-date { font-family: 'Fira Code', monospace; font-size: 0.75rem; color: var(--neon); margin-bottom: 0.4rem; }
+        .road-content h4 { font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; margin-bottom: 0.4rem; }
+        .road-content p { color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; }
+        .road-stat { display: inline-block; padding: 0.2rem 0.7rem; border-radius: 50px; font-size: 0.7rem; font-weight: 600; margin-top: 0.6rem; font-family: 'Fira Code', monospace; }
+        .st-done { background: rgba(0, 245, 212, 0.1); color: var(--neon); border: 1px solid rgba(0, 245, 212, 0.2); }
+        .st-prog { background: rgba(255, 190, 11, 0.1); color: var(--amber); border: 1px solid rgba(255, 190, 11, 0.2); }
+        .st-next { background: rgba(255, 0, 110, 0.1); color: var(--magenta); border: 1px solid rgba(255, 0, 110, 0.2); }
+
+        .news-sec { background: var(--bg-card); border-radius: 24px; padding: 4rem 2rem; text-align: center; border: 1px solid var(--border); position: relative; overflow: hidden; }
+        .news-sec::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(0, 245, 212, 0.05) 0%, transparent 70%); animation: spin 25s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .news-inner { position: relative; z-index: 1; }
+        .news-sec h2 { font-family: 'Space Grotesk', sans-serif; font-size: 2.5rem; margin-bottom: 1rem; }
+        .news-sec p { color: var(--text-dim); max-width: 500px; margin: 0 auto 2rem; }
+        .news-form { display: flex; gap: 1rem; max-width: 500px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
+        .news-form input { flex: 1; min-width: 250px; padding: 1rem 1.5rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 1rem; outline: none; transition: border-color 0.3s ease; font-family: 'Fira Code', monospace; }
+        .news-form input:focus { border-color: var(--neon); box-shadow: 0 0 15px var(--neon-glow); }
+        .news-form input::placeholder { color: var(--text-muted); }
+
+        .foot { background: var(--bg-elevated); border-top: 1px solid var(--border); padding: 4rem 2rem 2rem; }
+        .foot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 3rem; max-width: 1440px; margin: 0 auto 3rem; }
+        .foot-brand .brand { margin-bottom: 1rem; }
+        .foot-brand p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; }
+        .foot-links h4 { font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; margin-bottom: 1.2rem; color: var(--text); }
+        .foot-links ul { list-style: none; }
+        .foot-links li { margin-bottom: 0.6rem; }
+        .foot-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.3s ease; }
+        .foot-links a:hover { color: var(--neon); }
+        .soc-links { display: flex; gap: 0.8rem; margin-top: 1.5rem; }
+        .soc-links a { width: 38px; height: 38px; border-radius: 10px; background: var(--bg-card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-muted); text-decoration: none; transition: all 0.3s ease; font-size: 0.9rem; }
+        .soc-links a:hover { background: var(--neon); color: var(--bg); border-color: var(--neon); transform: translateY(-3px); box-shadow: 0 0 15px var(--neon-glow); }
+        .foot-bot { max-width: 1440px; margin: 0 auto; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .foot-bot p { color: var(--text-muted); font-size: 0.8rem; font-family: 'Fira Code', monospace; }
+
+        .marq-sec { padding: 2rem 0; overflow: hidden; background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .marq-track { display: flex; gap: 3rem; animation: marqScroll 35s linear infinite; width: max-content; }
+        .marq-track:hover { animation-play-state: paused; }
+        @keyframes marqScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        .marq-item { display: flex; align-items: center; gap: 0.7rem; color: var(--text-muted); font-size: 1.1rem; font-weight: 600; white-space: nowrap; font-family: 'Space Grotesk', sans-serif; }
+        .marq-item i { font-size: 1.4rem; }
+
+        .career-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.2rem; }
+        .career-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; text-align: center; transition: all 0.4s ease; position: relative; }
+        .career-card:hover { transform: translateY(-6px); border-color: var(--neon); box-shadow: 0 15px 40px rgba(0,0,0,0.3); }
+        .career-lvl { width: 56px; height: 56px; border-radius: 50%; background: var(--gradient-neon); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: var(--bg); margin: 0 auto 1.2rem; box-shadow: 0 0 20px var(--neon-glow); }
+        .career-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; margin-bottom: 0.5rem; }
+        .career-card p { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1rem; line-height: 1.5; }
+        .career-skills { display: flex; flex-wrap: wrap; gap: 0.35rem; justify-content: center; }
+
+        .price-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; align-items: start; }
+        .price-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 2.5rem; transition: all 0.4s ease; position: relative; }
+        .price-card.popular { border-color: var(--neon); transform: scale(1.04); box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 40px rgba(0, 245, 212, 0.08); }
+        .price-card:hover { transform: translateY(-6px); }
+        .price-card.popular:hover { transform: scale(1.04) translateY(-6px); }
+        .price-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); padding: 0.35rem 1.2rem; background: var(--gradient-neon); color: var(--bg); font-size: 0.75rem; font-weight: 700; border-radius: 50px; font-family: 'Fira Code', monospace; box-shadow: 0 0 15px var(--neon-glow); }
+        .price-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; margin-bottom: 0.4rem; }
+        .price-card .amt { font-family: 'Fira Code', monospace; font-size: 2.8rem; font-weight: 700; margin: 1.5rem 0; }
+        .price-card .amt span { font-size: 0.9rem; color: var(--text-muted); font-weight: 400; }
+        .price-feats { list-style: none; margin: 2rem 0; }
+        .price-feats li { display: flex; align-items: center; gap: 0.7rem; padding: 0.7rem 0; border-bottom: 1px solid rgba(255,255,255,0.03); color: var(--text-dim); font-size: 0.9rem; }
+        .price-feats li i { color: var(--neon); font-size: 0.8rem; }
+        .price-feats li.off { opacity: 0.3; }
+        .price-feats li.off i { color: var(--magenta); }
+
+        .blog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.8rem; }
+        .blog-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; transition: all 0.4s ease; }
+        .blog-card:hover { transform: translateY(-5px); border-color: var(--neon); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        .blog-img { height: 180px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .blog-img i { font-size: 2.5rem; color: rgba(255,255,255,0.2); position: relative; z-index: 1; }
+        .blog-cat { position: absolute; top: 1rem; left: 1rem; padding: 0.3rem 0.8rem; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border-radius: 50px; font-size: 0.7rem; color: white; font-weight: 600; font-family: 'Fira Code', monospace; border: 1px solid var(--glass-border); }
+        .blog-body { padding: 1.5rem 2rem 2rem; }
+        .blog-meta { display: flex; gap: 1rem; margin-bottom: 0.8rem; font-size: 0.78rem; color: var(--text-muted); font-family: 'Fira Code', monospace; }
+        .blog-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; margin-bottom: 0.6rem; line-height: 1.4; }
+        .blog-card p { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1.2rem; line-height: 1.6; }
+        .read-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--neon); text-decoration: none; font-weight: 600; font-size: 0.85rem; transition: gap 0.3s ease; font-family: 'Fira Code', monospace; }
+        .read-link:hover { gap: 0.8rem; }
+
+        .faq-list { max-width: 800px; margin: 0 auto; }
+        .faq-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 0.8rem; overflow: hidden; transition: all 0.3s ease; }
+        .faq-item:hover { border-color: var(--neon); }
+        .faq-q { padding: 1.3rem 2rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 600; font-size: 1rem; font-family: 'Space Grotesk', sans-serif; }
+        .faq-q i { transition: transform 0.3s ease; color: var(--neon); }
+        .faq-item.open .faq-q i { transform: rotate(180deg); }
+        .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease; }
+        .faq-item.open .faq-a { max-height: 300px; padding: 0 2rem 1.5rem; }
+        .faq-a p { color: var(--text-dim); line-height: 1.7; font-size: 0.95rem; }
+
+        .event-list { display: flex; flex-direction: column; gap: 0.8rem; max-width: 900px; margin: 0 auto; }
+        .event-row { display: flex; gap: 1.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.3rem 2rem; transition: all 0.3s ease; align-items: center; }
+        .event-row:hover { border-color: var(--neon); transform: translateX(6px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .event-date { text-align: center; min-width: 65px; }
+        .event-date .d { font-family: 'Fira Code', monospace; font-size: 1.8rem; font-weight: 700; color: var(--neon); line-height: 1; }
+        .event-date .m { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .event-info { flex: 1; }
+        .event-info h4 { font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; margin-bottom: 0.2rem; }
+        .event-info p { color: var(--text-muted); font-size: 0.85rem; }
+        .event-tag { padding: 0.25rem 0.7rem; border-radius: 50px; font-size: 0.7rem; font-weight: 600; font-family: 'Fira Code', monospace; }
+        .tag-ws { background: rgba(0, 245, 212, 0.1); color: var(--neon); border: 1px solid rgba(0, 245, 212, 0.2); }
+        .tag-hack { background: rgba(255, 0, 110, 0.1); color: var(--magenta); border: 1px solid rgba(255, 0, 110, 0.2); }
+        .tag-conf { background: rgba(255, 190, 11, 0.1); color: var(--amber); border: 1px solid rgba(255, 190, 11, 0.2); }
+
+        .api-box { background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; }
+        .api-row { padding: 1.3rem 2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: background 0.3s ease; }
+        .api-row:hover { background: rgba(0, 245, 212, 0.03); }
+        .api-row:last-child { border-bottom: none; }
+        .api-meth { padding: 0.25rem 0.7rem; border-radius: 6px; font-family: 'Fira Code', monospace; font-size: 0.75rem; font-weight: 600; }
+        .api-meth.get { background: rgba(0, 245, 212, 0.1); color: var(--neon); border: 1px solid rgba(0, 245, 212, 0.2); }
+        .api-meth.post { background: rgba(131, 56, 236, 0.1); color: var(--violet); border: 1px solid rgba(131, 56, 236, 0.2); }
+        .api-meth.put { background: rgba(255, 190, 11, 0.1); color: var(--amber); border: 1px solid rgba(255, 190, 11, 0.2); }
+        .api-meth.del { background: rgba(255, 0, 110, 0.1); color: var(--magenta); border: 1px solid rgba(255, 0, 110, 0.2); }
+        .api-path { font-family: 'Fira Code', monospace; font-size: 0.85rem; color: var(--text); }
+        .api-desc { color: var(--text-muted); font-size: 0.8rem; margin-left: auto; }
+
+        .partner-row { display: flex; justify-content: center; align-items: center; gap: 3rem; flex-wrap: wrap; opacity: 0.4; }
+        .partner-logo { font-size: 1.8rem; color: var(--text-muted); transition: all 0.3s ease; }
+        .partner-logo:hover { color: var(--text); opacity: 1; transform: scale(1.15); }
+
+        .contrib-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; }
+        .contrib-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; text-align: center; transition: all 0.3s ease; }
+        .contrib-card:hover { border-color: var(--neon); transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.3); }
+        .contrib-card .ico { width: 56px; height: 56px; border-radius: 50%; background: rgba(0, 245, 212, 0.1); color: var(--neon); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin: 0 auto 1.2rem; border: 1px solid rgba(0, 245, 212, 0.2); box-shadow: 0 0 15px var(--neon-glow); }
+        .contrib-card h3 { font-family: 'Space Grotesk', sans-serif; margin-bottom: 0.6rem; }
+        .contrib-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.2rem; line-height: 1.5; }
+
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
+        .reveal.show { opacity: 1; transform: translateY(0); }
+
+        .scroll-up { position: fixed; bottom: 2rem; right: 2rem; width: 46px; height: 46px; background: var(--gradient-neon); border: none; border-radius: 50%; color: var(--bg); font-size: 1.1rem; cursor: pointer; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 999; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--neon-glow); }
+        .scroll-up.vis { opacity: 1; visibility: visible; }
+        .scroll-up:hover { transform: translateY(-5px); box-shadow: 0 0 30px var(--neon-glow); }
+
+        .sec-line { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 0 auto; max-width: 700px; }
+
+        @media (max-width: 768px) {
+            .nav-menu { display: none; }
+            .mobile-toggle { display: block; }
+            .hero-metrics { grid-template-columns: repeat(2, 1fr); }
+            .metric-val { font-size: 1.6rem; }
+            .feat-grid, .proj-grid, .blog-grid { grid-template-columns: 1fr; }
+            .road-wrap::before { left: 20px; }
+            .road-item, .road-item:nth-child(even) { justify-content: flex-start; padding-right: 0; padding-left: 45px; }
+            .road-dot { left: 20px; transform: none; }
+            .road-content { margin: 0; max-width: 100%; }
+            .road-item:nth-child(odd) .road-content::after, .road-item:nth-child(even) .road-content::after { left: -16px; right: auto; border-right-color: var(--border); border-left-color: transparent; }
+            .price-card.popular { transform: none; }
+            .price-card.popular:hover { transform: translateY(-6px); }
+        }
+
+        .mob-menu { position: fixed; top: 0; right: -100%; width: 80%; max-width: 380px; height: 100vh; background: var(--bg); z-index: 2000; padding: 5rem 2rem 2rem; transition: right 0.4s ease; border-left: 1px solid var(--border); }
+        .mob-menu.open { right: 0; }
+        .mob-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1999; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .mob-overlay.open { opacity: 1; visibility: visible; }
+        .mob-close { position: absolute; top: 1.5rem; right: 1.5rem; background: none; border: none; color: var(--text); font-size: 1.4rem; cursor: pointer; }
+        .mob-links { list-style: none; }
+        .mob-links li { margin-bottom: 1.3rem; }
+        .mob-links a { color: var(--text); text-decoration: none; font-size: 1.1rem; font-weight: 600; display: block; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-family: 'Space Grotesk', sans-serif; }
+    </style>
+</head>
+<body>
+    <div class="noise-overlay"></div>
+    <div class="grid-bg"></div>
+    <div class="cursor-glow" id="cursorGlow"></div>
+
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <a href="#" class="brand">
+                <div class="brand-mark"><i class="fas fa-terminal"></i></div>
+                CodeCraft
+            </a>
+            <ul class="nav-menu">
+                <li><a href="#stack">Stack</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#community">Community</a></li>
+                <li><a href="#resources">Resources</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="#blog">Blog</a></li>
+            </ul>
+            <div class="nav-cta">
+                <a href="#" class="btn btn-ghost"><i class="fas fa-search"></i></a>
+                <a href="#" class="btn btn-neon">Start Free</a>
+                <button class="mobile-toggle" onclick="toggleMob()"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="mob-overlay" id="mobOverlay" onclick="toggleMob()"></div>
+    <div class="mob-menu" id="mobMenu">
+        <button class="mob-close" onclick="toggleMob()"><i class="fas fa-times"></i></button>
+        <ul class="mob-links">
+            <li><a href="#stack" onclick="toggleMob()">Stack</a></li>
+            <li><a href="#features" onclick="toggleMob()">Features</a></li>
+            <li><a href="#projects" onclick="toggleMob()">Projects</a></li>
+            <li><a href="#community" onclick="toggleMob()">Community</a></li>
+            <li><a href="#resources" onclick="toggleMob()">Resources</a></li>
+            <li><a href="#pricing" onclick="toggleMob()">Pricing</a></li>
+            <li><a href="#blog" onclick="toggleMob()">Blog</a></li>
+        </ul>
+    </div>
+
+    <section class="hero">
+        <div class="hero-inner">
+            <div class="hero-pill">
+                <span class="dot"></span>
+                v3.0 Released - AI-Powered Deployments
+            </div>
+            <h1>
+                <span class="line1">Build the Future</span><br>
+                <span class="line2">Ship at Light Speed</span><br>
+                <span class="line3">Scale Without Limits</span>
+            </h1>
+            <p class="hero-desc">The developer platform that turns ideas into production. From your first line of code to millions of users, CodeCraft handles everything in between.</p>
+            <div class="hero-btns">
+                <a href="#" class="btn btn-neon" style="padding: 1rem 2.2rem; font-size: 1rem;">
+                    <i class="fas fa-rocket"></i> Deploy in 30 Seconds
+                </a>
+                <a href="#" class="btn btn-ghost" style="padding: 1rem 2.2rem; font-size: 1rem;">
+                    <i class="fas fa-play-circle"></i> Watch Demo
+                </a>
+            </div>
+            <div class="hero-metrics">
+                <div class="metric">
+                    <div class="metric-val">75K+</div>
+                    <div class="metric-label">Developers</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-val">3.5M+</div>
+                    <div class="metric-label">Deployments</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-val">99.99%</div>
+                    <div class="metric-label">Uptime SLA</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-val">180+</div>
+                    <div class="metric-label">Countries</div>
+                </div>
+            </div>
+
+            <div class="hero-code">
+                <div class="code-bar">
+                    <div class="code-dot r"></div>
+                    <div class="code-dot y"></div>
+                    <div class="code-dot g"></div>
+                    <span class="code-title">codecraft-cli</span>
+                </div>
+                <div class="code-body">
+                    <div class="code-line"><span class="code-prompt">$</span> <span class="code-cmd">npm install -g @codecraft/cli</span></div>
+                    <div class="code-line"><span class="code-out">+ @codecraft/cli@4.1.0 installed in 2.1s</span></div>
+                    <div class="code-line"><span class="code-prompt">$</span> <span class="code-cmd">codecraft init my-app --template astro</span></div>
+                    <div class="code-line"><span class="code-out">Project my-app created with Astro template</span></div>
+                    <div class="code-line"><span class="code-prompt">$</span> <span class="code-cmd">codecraft deploy --region global</span></div>
+                    <div class="code-line"><span class="code-out">Deployed to 200+ edge locations in 8.3s</span> <span class="code-blink"></span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="marq-sec">
+        <div class="marq-track">
+            <div class="marq-item"><i class="fab fa-js"></i> JavaScript</div>
+            <div class="marq-item"><i class="fab fa-react"></i> React</div>
+            <div class="marq-item"><i class="fab fa-vuejs"></i> Vue</div>
+            <div class="marq-item"><i class="fab fa-node"></i> Node.js</div>
+            <div class="marq-item"><i class="fab fa-python"></i> Python</div>
+            <div class="marq-item"><i class="fab fa-docker"></i> Docker</div>
+            <div class="marq-item"><i class="fab fa-aws"></i> AWS</div>
+            <div class="marq-item"><i class="fab fa-git-alt"></i> Git</div>
+            <div class="marq-item"><i class="fab fa-rust"></i> Rust</div>
+            <div class="marq-item"><i class="fab fa-golang"></i> Go</div>
+            <div class="marq-item"><i class="fab fa-angular"></i> Angular</div>
+            <div class="marq-item"><i class="fab fa-svelte"></i> Svelte</div>
+            <div class="marq-item"><i class="fas fa-database"></i> PostgreSQL</div>
+            <div class="marq-item"><i class="fas fa-fire"></i> Firebase</div>
+            <div class="marq-item"><i class="fab fa-graphql"></i> GraphQL</div>
+            <div class="marq-item"><i class="fab fa-js"></i> JavaScript</div>
+            <div class="marq-item"><i class="fab fa-react"></i> React</div>
+            <div class="marq-item"><i class="fab fa-vuejs"></i> Vue</div>
+            <div class="marq-item"><i class="fab fa-node"></i> Node.js</div>
+            <div class="marq-item"><i class="fab fa-python"></i> Python</div>
+            <div class="marq-item"><i class="fab fa-docker"></i> Docker</div>
+            <div class="marq-item"><i class="fab fa-aws"></i> AWS</div>
+            <div class="marq-item"><i class="fab fa-git-alt"></i> Git</div>
+            <div class="marq-item"><i class="fab fa-rust"></i> Rust</div>
+            <div class="marq-item"><i class="fab fa-golang"></i> Go</div>
+            <div class="marq-item"><i class="fab fa-angular"></i> Angular</div>
+            <div class="marq-item"><i class="fab fa-svelte"></i> Svelte</div>
+            <div class="marq-item"><i class="fas fa-database"></i> PostgreSQL</div>
+            <div class="marq-item"><i class="fas fa-fire"></i> Firebase</div>
+            <div class="marq-item"><i class="fab fa-graphql"></i> GraphQL</div>
+        </div>
+    </div>
+
+    <section id="stack">
+        <div class="wrap">
+            <div class="sec-head reveal">
+                <span class="sec-tag">Technology</span>
+                <h2>Every Stack, Supported</h2>
+                <p>From frontend frameworks to backend runtimes, databases to DevOps tools. CodeCraft works with everything you already use.</p>
+            </div>
+            <div class="stack-grid">
+                <div class="stack-card reveal">
+                    <div class="stack-icon js"><i class="fab fa-js"></i></div>
+                    <h3>JavaScript</h3>
+                    <p>The universal language. ES2024+, async/await, modules, and the modern web platform.</p>
+                    <div class="stack-tags"><span class="stack-tag">ES2024</span><span class="stack-tag">V8</span><span class="stack-tag">DOM</span></div>
+                </div>
+                <div class="stack-card reveal">
+                    <div class="stack-icon ts"><i class="fas fa-code"></i></div>
+                    <h3>TypeScript</h3>
+                    <p>Type-safe development at scale. Strict mode, generics, decorators, and mapped types.</p>
+                    <div class="stack-tags"><span class="stack-tag">5.5+</span><span class="stack-tag">Strict</span><span class="stack-tag">Generics</span></div>
+                </div>
+                <div class="stack-card reveal">
+                    <div class="stack-icon react"><i class="fab fa-react"></i></div>
+                    <h3>React</h3>
+                    <p>Component-based UI. Server Components, Suspense, concurrent features, and the new compiler.</p>
+                    <div class="stack-tags"><span class="stack-tag">19</span><span class="stack-tag">RSC</span><span class="stack-tag">Compiler</span></div>
+                </div>
+                <div class="stack-card reveal">
+                    <div class="stack-icon vue"><i class="fab fa-vuejs"></i></div>
+                    <h3>Vue.js</h3>
+                    <p>The progressive framework. Composition API, Pinia, Nuxt, and Vapor mode for performance.</p>
+                    <div class="stack-tags"><span class="stack-tag">3.4</span><span class="stack-tag">Pinia</span><span class="stack-tag">Nuxt</span></div>
+                </div>
+                <div class="stack-card reveal">
+                    <div class="stack-icon node"><i class="fab fa-node"></i></div>
+                    <h3>Node.js</h3>
+                    <p>JavaScript runtime on steroids. Native ESM, Worker Threads, and built-in test runner.</p>
+                    <div class="stack-tags"><span class="stack-tag">22 LTS</span><span class="stack-tag">ESM</span><span class="stack-tag">Test</span></div>
+                </div>
+                <div class="stack-card reveal">
+                    <div class="stack-icon py"><i class="fab fa-python"></i></div>
+                    <h3>Python</h3>
+                    <p>Data science to web backends. FastAPI, Django, Pydantic, and async/await patterns.</p>
+                    <div class="stack-tags"><span class="stack-tag">3.12</span><span class="stack-tag">FastAPI</span><span class="stack-tag">Pydantic</span></div>
+                </div>
+                <div class="stack-card reveal">
+                    <div class="stack-icon go"><i class="fab fa-golang"></i></div>
+                    <h3>Go</h3>
+                    <p>Simple, fast, reliable. Goroutines, channels, generics, and the standard library.</p>
+                    <div class="stack-tags"><span class="stack-tag">1.22</span><span class="stack-tag">Goroutines</span><span class="stack-tag">Generics</span></div>
+                </div>
+                <div class="stack-card reveal">
+                    <div class="stack-icon rs"><i class="fab fa-rust"></i></div>
+                    <h3>Rust</h3>
+                    <p>Systems programming reimagined. Zero-cost abstractions, fearless concurrency, Cargo.</p>
+                    <div class="stack-tags"><span class="stack-tag">1.78</span><span class="stack-tag">Cargo</span><span class="stack-tag">Async</span></div>
+                </div>
+                <div class="stack-card reveal">
+                    <div class="stack-icon docker"><i class="fab fa-docker"></i></div>
+                    <h3>Docker</h3>
+                    <p>Containerize everything. Multi-stage builds, BuildKit, Compose, and registry management.</p>
+                    <div class="stack-tags"><span class="stack-tag">25.0</span><span class="stack-tag">BuildKit</span><span class="stack-tag">Compose</span></div>
+                </div>
+                <div class="stack-card reveal">
+                    <div class="stack-icon k8s"><i class="fas fa-dharmachakra"></i></div>
+                    <h3>Kubernetes</h3>
+                    <p>Orchestrate at scale. Helm charts, operators, service mesh, and GitOps workflows.</p>
+                    <div class="stack-tags"><span class="stack-tag">1.30</span><span class="stack-tag">Helm</span><span class="stack-tag">ArgoCD</span></div>
+                </div>
+                <div class="stack-card reveal">
+                    <div class="stack-icon aws"><i class="fab fa-aws"></i></div>
+                    <h3>AWS</h3>
+                    <p>Cloud-native infrastructure. Lambda, S3, DynamoDB, and 200+ managed services.</p>
+                    <div class="stack-tags"><span class="stack-tag">SDK v3</span><span class="stack-tag">CDK</span><span class="stack-tag">SAM</span></div>
+                </div>
+                <div class="stack-card reveal">
+                    <div class="stack-icon git"><i class="fab fa-git-alt"></i></div>
+                    <h3>Git</h3>
+                    <p>Distributed version control. Advanced branching, hooks, Actions, and code review.</p>
+                    <div class="stack-tags"><span class="stack-tag">2.45</span><span class="stack-tag">Actions</span><span class="stack-tag">Hooks</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="sec-line"></div>
+
+    <section id="features">
+        <div class="wrap">
+            <div class="sec-head reveal">
+                <span class="sec-tag">Features</span>
+                <h2>Built for Serious Developers</h2>
+                <p>Enterprise-grade tools that feel like magic. Every feature designed to remove friction from your workflow.</p>
+            </div>
+            <div class="feat-grid">
+                <div class="feat-card reveal">
+                    <span class="feat-num">01</span>
+                    <div class="feat-ico"><i class="fas fa-bolt"></i></div>
+                    <h3>Sub-Second Deploys</h3>
+                    <p>Push to production in under a second. Our global edge network ensures your users never wait.</p>
+                    <ul class="feat-list">
+                        <li><i class="fas fa-caret-right"></i> Git-triggered deployments</li>
+                        <li><i class="fas fa-caret-right"></i> Instant preview URLs</li>
+                        <li><i class="fas fa-caret-right"></i> Atomic rollouts</li>
+                        <li><i class="fas fa-caret-right"></i> Smart cache warming</li>
+                    </ul>
+                </div>
+                <div class="feat-card reveal">
+                    <span class="feat-num">02</span>
+                    <div class="feat-ico"><i class="fas fa-shield-halved"></i></div>
+                    <h3>Zero-Trust Security</h3>
+                    <p>SOC 2 Type II, ISO 27001, GDPR compliant. End-to-end encryption and automated threat detection.</p>
+                    <ul class="feat-list">
+                        <li><i class="fas fa-caret-right"></i> SOC 2 Type II certified</li>
+                        <li><i class="fas fa-caret-right"></i> E2E encryption</li>
+                        <li><i class="fas fa-caret-right"></i> SSO & SAML</li>
+                        <li><i class="fas fa-caret-right"></i> Automated pentests</li>
+                    </ul>
+                </div>
+                <div class="feat-card reveal">
+                    <span class="feat-num">03</span>
+                    <div class="feat-ico"><i class="fas fa-chart-line"></i></div>
+                    <h3>Observability Suite</h3>
+                    <p>Real-time metrics, distributed tracing, error tracking, and AI-powered anomaly detection.</p>
+                    <ul class="feat-list">
+                        <li><i class="fas fa-caret-right"></i> Live dashboards</li>
+                        <li><i class="fas fa-caret-right"></i> Distributed tracing</li>
+                        <li><i class="fas fa-caret-right"></i> Error alerting</li>
+                        <li><i class="fas fa-caret-right"></i> AI insights</li>
+                    </ul>
+                </div>
+                <div class="feat-card reveal">
+                    <span class="feat-num">04</span>
+                    <div class="feat-ico"><i class="fas fa-users"></i></div>
+                    <h3>Team Workspaces</h3>
+                    <p>Collaborate seamlessly with role-based access, inline reviews, and shared environments.</p>
+                    <ul class="feat-list">
+                        <li><i class="fas fa-caret-right"></i> RBAC & permissions</li>
+                        <li><i class="fas fa-caret-right"></i> Inline code reviews</li>
+                        <li><i class="fas fa-caret-right"></i> Shared previews</li>
+                        <li><i class="fas fa-caret-right"></i> Activity streams</li>
+                    </ul>
+                </div>
+                <div class="feat-card reveal">
+                    <span class="feat-num">05</span>
+                    <div class="feat-ico"><i class="fas fa-brain"></i></div>
+                    <h3>AI Copilot</h3>
+                    <p>Context-aware code generation, intelligent refactoring, and automated code reviews powered by LLMs.</p>
+                    <ul class="feat-list">
+                        <li><i class="fas fa-caret-right"></i> Context completions</li>
+                        <li><i class="fas fa-caret-right"></i> Natural language to code</li>
+                        <li><i class="fas fa-caret-right"></i> Auto-refactoring</li>
+                        <li><i class="fas fa-caret-right"></i> Bug prediction</li>
+                    </ul>
+                </div>
+                <div class="feat-card reveal">
+                    <span class="feat-num">06</span>
+                    <div class="feat-ico"><i class="fas fa-globe"></i></div>
+                    <h3>Edge Network</h3>
+                    <p>200+ edge locations. Auto SSL, DDoS mitigation, and intelligent request routing worldwide.</p>
+                    <ul class="feat-list">
+                        <li><i class="fas fa-caret-right"></i> 200+ edge nodes</li>
+                        <li><i class="fas fa-caret-right"></i> Auto SSL/TLS</li>
+                        <li><i class="fas fa-caret-right"></i> DDoS protection</li>
+                        <li><i class="fas fa-caret-right"></i> Smart routing</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section style="background: var(--bg-elevated);">
+        <div class="wrap">
+            <div class="sec-head reveal">
+                <span class="sec-tag">Code</span>
+                <h2>One SDK, Every Language</h2>
+                <p>Deploy, monitor, and manage your apps with our native SDKs. Consistent APIs across all languages.</p>
+            </div>
+            <div class="code-playground reveal">
+                <div class="play-tabs">
+                    <button class="play-tab active" onclick="switchPlay(this, 'js2')">JavaScript</button>
+                    <button class="play-tab" onclick="switchPlay(this, 'ts2')">TypeScript</button>
+                    <button class="play-tab" onclick="switchPlay(this, 'py2')">Python</button>
+                    <button class="play-tab" onclick="switchPlay(this, 'go2')">Go</button>
+                    <button class="play-tab" onclick="switchPlay(this, 'rs2')">Rust</button>
+                    <button class="play-tab" onclick="switchPlay(this, 'rb2')">Ruby</button>
+                </div>
+                <div class="play-body">
+                    <div class="play-panel active" id="js2">
+<span class="tok-cmt">// Deploy a full-stack app in seconds</span><br>
+<span class="tok-kw">import</span> { CodeCraft } <span class="tok-kw">from</span> <span class="tok-str">'@codecraft/sdk'</span>;<br><br>
+<span class="tok-kw">const</span> app = <span class="tok-kw">new</span> <span class="tok-cls">CodeCraft</span>({<br>
+&ensp;&ensp;name: <span class="tok-str">'my-awesome-app'</span>,<br>
+&ensp;&ensp;template: <span class="tok-str">'nextjs'</span>,<br>
+&ensp;&ensp;region: <span class="tok-str">'global'</span>,<br>
+&ensp;&ensp;env: { <span class="tok-str">'NODE_ENV'</span>: <span class="tok-str">'production'</span> }<br>
+});<br><br>
+<span class="tok-cmt">// Auto-scaling, SSL, CDN included</span><br>
+<span class="tok-kw">await</span> app.<span class="tok-fn">deploy</span>();<br><br>
+<span class="tok-cmt">// Stream live logs</span><br>
+app.<span class="tok-fn">on</span>(<span class="tok-str">'log'</span>, (log) => <span class="tok-fn">console</span>.<span class="tok-fn">log</span>(log));
+                    </div>
+                    <div class="play-panel" id="ts2">
+<span class="tok-cmt">// Full type safety end-to-end</span><br>
+<span class="tok-kw">import</span> { CodeCraft, Config } <span class="tok-kw">from</span> <span class="tok-str">'@codecraft/sdk'</span>;<br><br>
+<span class="tok-kw">interface</span> <span class="tok-cls">AppConfig</span> <span class="tok-kw">extends</span> <span class="tok-cls">Config</span> {<br>
+&ensp;&ensp;aiEnabled: <span class="tok-kw">boolean</span>;<br>
+&ensp;&ensp;cache: <span class="tok-str">'lru'</span> | <span class="tok-str">'ttl'</span>;<br>
+}<br><br>
+<span class="tok-kw">const</span> config: <span class="tok-cls">AppConfig</span> = {<br>
+&ensp;&ensp;name: <span class="tok-str">'typed-app'</span>,<br>
+&ensp;&ensp;template: <span class="tok-str">'nextjs'</span>,<br>
+&ensp;&ensp;aiEnabled: <span class="tok-kw">true</span>,<br>
+&ensp;&ensp;cache: <span class="tok-str">'ttl'</span><br>
+};<br><br>
+<span class="tok-kw">const</span> app = <span class="tok-kw">new</span> <span class="tok-cls">CodeCraft</span>&lt;<span class="tok-cls">AppConfig</span>&gt;(config);<br>
+<span class="tok-kw">await</span> app.<span class="tok-fn">deploy</span>();
+                    </div>
+                    <div class="play-panel" id="py2">
+<span class="tok-cmt"># Python SDK for CodeCraft</span><br>
+<span class="tok-kw">from</span> codecraft <span class="tok-kw">import</span> CodeCraft, Config<br><br>
+<span class="tok-kw">class</span> <span class="tok-cls">MyConfig</span>(Config):<br>
+&ensp;&ensp;name: <span class="tok-cls">str</span> = <span class="tok-str">"python-api"</span><br>
+&ensp;&ensp;template: <span class="tok-cls">str</span> = <span class="tok-str">"fastapi"</span><br>
+&ensp;&ensp;workers: <span class="tok-cls">int</span> = <span class="tok-num">4</span><br><br>
+config = MyConfig()<br>
+app = CodeCraft(config)<br><br>
+<span class="tok-cmt"># Deploy with auto-scaling</span><br>
+app.deploy()<br><br>
+<span class="tok-cmt"># Monitor in real-time</span><br>
+<span class="tok-kw">for</span> log <span class="tok-kw">in</span> app.stream_logs():<br>
+&ensp;&ensp;<span class="tok-fn">print</span>(log)
+                    </div>
+                    <div class="play-panel" id="go2">
+<span class="tok-cmt">// Zero-allocation Go SDK</span><br>
+<span class="tok-kw">package</span> main<br><br>
+<span class="tok-kw">import</span> (<br>
+&ensp;&ensp;<span class="tok-str">"context"</span><br>
+&ensp;&ensp;cc <span class="tok-str">"github.com/codecraft/go-sdk"</span><br>
+)<br><br>
+<span class="tok-kw">func</span> <span class="tok-fn">main</span>() {<br>
+&ensp;&ensp;ctx := context.<span class="tok-fn">Background</span>()<br><br>
+&ensp;&ensp;app := cc.<span class="tok-fn">New</span>(cc.Config{<br>
+&ensp;&ensp;&ensp;&ensp;Name:      <span class="tok-str">"go-service"</span>,<br>
+&ensp;&ensp;&ensp;&ensp;Template:  <span class="tok-str">"gin"</span>,<br>
+&ensp;&ensp;&ensp;&ensp;Workers:   <span class="tok-num">8</span>,<br>
+&ensp;&ensp;})<br><br>
+&ensp;&ensp;<span class="tok-cmt">// Deploy with one call</span><br>
+&ensp;&ensp;<span class="tok-kw">if</span> err := app.<span class="tok-fn">Deploy</span>(ctx); err != <span class="tok-kw">nil</span> {<br>
+&ensp;&ensp;&ensp;&ensp;<span class="tok-fn">panic</span>(err)<br>
+&ensp;&ensp;}<br>
+}
+                    </div>
+                    <div class="play-panel" id="rs2">
+<span class="tok-cmt">// Memory-safe Rust SDK</span><br>
+<span class="tok-kw">use</span> codecraft::{CodeCraft, Config};<br><br>
+<span class="tok-kw">#[tokio::main]</span><br>
+<span class="tok-kw">async fn</span> <span class="tok-fn">main</span>() -> <span class="tok-cls">Result</span>&lt;(), Box&lt;<span class="tok-kw">dyn</span> std::error::Error&gt;&gt; {<br>
+&ensp;&ensp;<span class="tok-kw">let</span> config = Config {<br>
+&ensp;&ensp;&ensp;&ensp;name: <span class="tok-str">"rust-api"</span>.<span class="tok-fn">to_string</span>(),<br>
+&ensp;&ensp;&ensp;&ensp;template: <span class="tok-str">"axum"</span>.<span class="tok-fn">to_string</span>(),<br>
+&ensp;&ensp;&ensp;&ensp;workers: <span class="tok-num">16</span>,<br>
+&ensp;&ensp;};<br><br>
+&ensp;&ensp;<span class="tok-kw">let</span> app = CodeCraft::new(config);<br>
+&ensp;&ensp;app.deploy().<span class="tok-kw">await</span>?;<br><br>
+&ensp;&ensp;<span class="tok-fn">println!</span>(<span class="tok-str">"Deployed!"</span>);<br>
+&ensp;&ensp;<span class="tok-cls">Ok</span>(())<br>
+}
+                    </div>
+                    <div class="play-panel" id="rb2">
+<span class="tok-cmt"># Elegant Ruby SDK</span><br>
+<span class="tok-kw">require</span> <span class="tok-str">'codecraft'</span><br><br>
+config = CodeCraft::Config.<span class="tok-fn">new</span>(<br>
+&ensp;&ensp;name: <span class="tok-str">"ruby-app"</span>,<br>
+&ensp;&ensp;template: <span class="tok-str">"rails"</span>,<br>
+&ensp;&ensp;workers: <span class="tok-num">4</span><br>
+)<br><br>
+app = CodeCraft.<span class="tok-fn">new</span>(config)<br><br>
+<span class="tok-cmt"># Deploy with one method call</span><br>
+app.<span class="tok-fn">deploy</span><br><br>
+<span class="tok-cmt"># Stream logs with blocks</span><br>
+app.<span class="tok-fn">stream_logs</span> <span class="tok-kw">do</span> |log|<br>
+&ensp;&ensp;<span class="tok-fn">puts</span> log<br>
+<span class="tok-kw">end</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="sec-line"></div>
+
+    <section id="projects">
+        <div class="wrap">
+            <div class="sec-head reveal">
+                <span class="sec-tag">Showcase</span>
+                <h2>Built with CodeCraft</h2>
+                <p>Amazing projects created by our community. Get inspired and start building.</p>
+            </div>
+            <div class="proj-grid">
+                <div class="proj-card reveal">
+                    <div class="proj-img" style="background: linear-gradient(135deg, #8338ec 0%, #3a86ff 100%);"><i class="fas fa-brain"></i></div>
+                    <div class="proj-body">
+                        <div class="proj-meta">
+                            <span><i class="fas fa-star"></i> 3.2k</span>
+                            <span><i class="fas fa-code-branch"></i> 189</span>
+                            <span><i class="fas fa-eye"></i> 9.8k</span>
+                        </div>
+                        <h3>NeuralForge AI</h3>
+                        <p>Open-source ML platform for training and deploying custom models at scale with zero-config infrastructure.</p>
+                        <div class="proj-links">
+                            <a href="#"><i class="fab fa-github"></i> Source</a>
+                            <a href="#"><i class="fas fa-external-link-alt"></i> Demo</a>
+                            <a href="#"><i class="fas fa-book"></i> Docs</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="proj-card reveal">
+                    <div class="proj-img" style="background: linear-gradient(135deg, #00f5d4 0%, #00bbf9 100%);"><i class="fas fa-shield-halved"></i></div>
+                    <div class="proj-body">
+                        <div class="proj-meta">
+                            <span><i class="fas fa-star"></i> 2.1k</span>
+                            <span><i class="fas fa-code-branch"></i> 112</span>
+                            <span><i class="fas fa-eye"></i> 6.4k</span>
+                        </div>
+                        <h3>VaultGuard</h3>
+                        <p>Zero-knowledge password manager with biometric auth and post-quantum encryption algorithms.</p>
+                        <div class="proj-links">
+                            <a href="#"><i class="fab fa-github"></i> Source</a>
+                            <a href="#"><i class="fas fa-external-link-alt"></i> Demo</a>
+                            <a href="#"><i class="fas fa-book"></i> Docs</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="proj-card reveal">
+                    <div class="proj-img" style="background: linear-gradient(135deg, #ffbe0b 0%, #ff006e 100%);"><i class="fas fa-chart-pie"></i></div>
+                    <div class="proj-body">
+                        <div class="proj-meta">
+                            <span><i class="fas fa-star"></i> 4.5k</span>
+                            <span><i class="fas fa-code-branch"></i> 278</span>
+                            <span><i class="fas fa-eye"></i> 15.2k</span>
+                        </div>
+                        <h3>DataViz Pro</h3>
+                        <p>Real-time data visualization with 60+ chart types, live streaming, and collaborative dashboards.</p>
+                        <div class="proj-links">
+                            <a href="#"><i class="fab fa-github"></i> Source</a>
+                            <a href="#"><i class="fas fa-external-link-alt"></i> Demo</a>
+                            <a href="#"><i class="fas fa-book"></i> Docs</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="proj-card reveal">
+                    <div class="proj-img" style="background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);"><i class="fas fa-leaf"></i></div>
+                    <div class="proj-body">
+                        <div class="proj-meta">
+                            <span><i class="fas fa-star"></i> 1.2k</span>
+                            <span><i class="fas fa-code-branch"></i> 78</span>
+                            <span><i class="fas fa-eye"></i> 4.1k</span>
+                        </div>
+                        <h3>EcoTrack</h3>
+                        <p>Carbon footprint tracker with IoT sensor integration, ML-powered insights, and sustainability scoring.</p>
+                        <div class="proj-links">
+                            <a href="#"><i class="fab fa-github"></i> Source</a>
+                            <a href="#"><i class="fas fa-external-link-alt"></i> Demo</a>
+                            <a href="#"><i class="fas fa-book"></i> Docs</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="proj-card reveal">
+                    <div class="proj-img" style="background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);"><i class="fas fa-gamepad"></i></div>
+                    <div class="proj-body">
+                        <div class="proj-meta">
+                            <span><i class="fas fa-star"></i> 5.8k</span>
+                            <span><i class="fas fa-code-branch"></i> 412</span>
+                            <span><i class="fas fa-eye"></i> 22.1k</span>
+                        </div>
+                        <h3>GameForge Engine</h3>
+                        <p>WebGPU game engine with physics simulation, multiplayer networking, and asset pipeline.</p>
+                        <div class="proj-links">
+                            <a href="#"><i class="fab fa-github"></i> Source</a>
+                            <a href="#"><i class="fas fa-external-link-alt"></i> Demo</a>
+                            <a href="#"><i class="fas fa-book"></i> Docs</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="proj-card reveal">
+                    <div class="proj-img" style="background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);"><i class="fas fa-rocket"></i></div>
+                    <div class="proj-body">
+                        <div class="proj-meta">
+                            <span><i class="fas fa-star"></i> 1.9k</span>
+                            <span><i class="fas fa-code-branch"></i> 156</span>
+                            <span><i class="fas fa-eye"></i> 7.8k</span>
+                        </div>
+                        <h3>LaunchPad CI</h3>
+                        <p>Advanced CI/CD orchestrator with parallel testing, intelligent caching, and auto-rollback.</p>
+                        <div class="proj-links">
+                            <a href="#"><i class="fab fa-github"></i> Source</a>
+                            <a href="#"><i class="fas fa-external-link-alt"></i> Demo</a>
+                            <a href="#"><i class="fas fa-book"></i> Docs</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="community" style="background: var(--bg-elevated);">
+        <div class="wrap">
+            <div class="sec-head reveal">
+                <span class="sec-tag">Community</span>
+                <h2>Join 75,000+ Developers</h2>
+                <p>Connect, collaborate, and grow with developers from every corner of the world.</p>
+            </div>
+            <div class="comm-stats reveal">
+                <div class="comm-stat">
+                    <i class="fas fa-users"></i>
+                    <div class="num">75K+</div>
+                    <div class="lbl">Active Devs</div>
+                </div>
+                <div class="comm-stat">
+                    <i class="fas fa-code-branch"></i>
+                    <div class="num">180K+</div>
+                    <div class="lbl">Open Source</div>
+                </div>
+                <div class="comm-stat">
+                    <i class="fas fa-comments"></i>
+                    <div class="num">3.2M+</div>
+                    <div class="lbl">Messages</div>
+                </div>
+                <div class="comm-stat">
+                    <i class="fas fa-calendar-check"></i>
+                    <div class="num">750+</div>
+                    <div class="lbl">Events</div>
+                </div>
+            </div>
+            <div class="testi-grid">
+                <div class="testi-card reveal">
+                    <p class="testi-txt">CodeCraft completely changed how our engineering team ships. Deployments that took hours now happen in seconds. The AI copilot catches bugs before they reach staging.</p>
+                    <div class="testi-auth">
+                        <div class="testi-av">SK</div>
+                        <div class="testi-info">
+                            <h4>Sarah Kim</h4>
+                            <span>CTO, TechFlow Inc.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testi-card reveal">
+                    <p class="testi-txt">As a solo founder, CodeCraft gives me the infrastructure of a Fortune 500 company. I went from idea to 10K users in two weeks without touching a single config file.</p>
+                    <div class="testi-auth">
+                        <div class="testi-av">MR</div>
+                        <div class="testi-info">
+                            <h4>Marcus Rodriguez</h4>
+                            <span>Founder, StartupX</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testi-card reveal">
+                    <p class="testi-txt">The observability suite alone is worth the price. I can see exactly what's happening in production in real-time. The community Discord is incredibly helpful too.</p>
+                    <div class="testi-auth">
+                        <div class="testi-av">EJ</div>
+                        <div class="testi-info">
+                            <h4>Emily Johnson</h4>
+                            <span>Indie Developer</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="sec-line"></div>
+
+    <section id="resources">
+        <div class="wrap">
+            <div class="sec-head reveal">
+                <span class="sec-tag">Resources</span>
+                <h2>Everything You Need to Learn</h2>
+                <p>Curated resources, tutorials, and tools to accelerate your development journey.</p>
+            </div>
+            <div class="res-grid">
+                <div class="res-card reveal">
+                    <div class="res-ico"><i class="fas fa-book"></i></div>
+                    <div class="res-info">
+                        <h4>Documentation</h4>
+                        <p>Comprehensive guides, API references, and step-by-step tutorials for every feature.</p>
+                        <div class="res-meta">
+                            <span><i class="fas fa-file-alt"></i> 250+ Pages</span>
+                            <span><i class="fas fa-sync"></i> Daily</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="res-card reveal">
+                    <div class="res-ico"><i class="fas fa-video"></i></div>
+                    <div class="res-info">
+                        <h4>Video Courses</h4>
+                        <p>Production-quality video tutorials from beginner to advanced topics, updated weekly.</p>
+                        <div class="res-meta">
+                            <span><i class="fas fa-play-circle"></i> 200+ Videos</span>
+                            <span><i class="fas fa-clock"></i> 80+ Hours</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="res-card reveal">
+                    <div class="res-ico"><i class="fas fa-code"></i></div>
+                    <div class="res-info">
+                        <h4>Code Examples</h4>
+                        <p>Copy-paste ready snippets and starter templates for common patterns and architectures.</p>
+                        <div class="res-meta">
+                            <span><i class="fas fa-file-code"></i> 800+ Snippets</span>
+                            <span><i class="fas fa-layer-group"></i> 80 Templates</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="res-card reveal">
+                    <div class="res-ico"><i class="fas fa-graduation-cap"></i></div>
+                    <div class="res-info">
+                        <h4>Learning Paths</h4>
+                        <p>Structured curricula with hands-on projects, quizzes, and certificates of completion.</p>
+                        <div class="res-meta">
+                            <span><i class="fas fa-route"></i> 35 Paths</span>
+                            <span><i class="fas fa-certificate"></i> Certified</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="res-card reveal">
+                    <div class="res-ico"><i class="fas fa-puzzle-piece"></i></div>
+                    <div class="res-info">
+                        <h4>Plugins & Integrations</h4>
+                        <p>Extend CodeCraft with community plugins for IDEs, CI/CD, monitoring, and more.</p>
+                        <div class="res-meta">
+                            <span><i class="fas fa-plug"></i> 500+ Plugins</span>
+                            <span><i class="fas fa-download"></i> 2M+ Downloads</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="res-card reveal">
+                    <div class="res-ico"><i class="fas fa-headset"></i></div>
+                    <div class="res-info">
+                        <h4>24/7 Support</h4>
+                        <p>Round-the-clock support with average response under 3 minutes for Pro and Enterprise.</p>
+                        <div class="res-meta">
+                            <span><i class="fas fa-clock"></i> 24/7</span>
+                            <span><i class="fas fa-bolt"></i> < 3min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section style="background: var(--bg-elevated);">
+        <div class="wrap">
+            <div class="sec-head reveal">
+                <span class="sec-tag">API</span>
+                <h2>REST API Reference</h2>
+                <p>Well-designed, consistent APIs that work with any language or framework.</p>
+            </div>
+            <div class="api-box reveal">
+                <div class="api-row">
+                    <span class="api-meth get">GET</span>
+                    <span class="api-path">/api/v2/projects</span>
+                    <span class="api-desc">List all projects</span>
+                </div>
+                <div class="api-row">
+                    <span class="api-meth post">POST</span>
+                    <span class="api-path">/api/v2/projects</span>
+                    <span class="api-desc">Create new project</span>
+                </div>
+                <div class="api-row">
+                    <span class="api-meth get">GET</span>
+                    <span class="api-path">/api/v2/projects/{id}/deployments</span>
+                    <span class="api-desc">Get deployment history</span>
+                </div>
+                <div class="api-row">
+                    <span class="api-meth post">POST</span>
+                    <span class="api-path">/api/v2/projects/{id}/deploy</span>
+                    <span class="api-desc">Trigger deployment</span>
+                </div>
+                <div class="api-row">
+                    <span class="api-meth put">PUT</span>
+                    <span class="api-path">/api/v2/projects/{id}/env</span>
+                    <span class="api-desc">Update environment variables</span>
+                </div>
+                <div class="api-row">
+                    <span class="api-meth del">DELETE</span>
+                    <span class="api-path">/api/v2/projects/{id}</span>
+                    <span class="api-desc">Delete project</span>
+                </div>
+                <div class="api-row">
+                    <span class="api-meth get">GET</span>
+                    <span class="api-path">/api/v2/projects/{id}/logs</span>
+                    <span class="api-desc">Stream real-time logs</span>
+                </div>
+                <div class="api-row">
+                    <span class="api-meth post">POST</span>
+                    <span class="api-path">/api/v2/projects/{id}/rollback</span>
+                    <span class="api-desc">Rollback to previous version</span>
+                </div>
+                <div class="api-row">
+                    <span class="api-meth get">GET</span>
+                    <span class="api-path">/api/v2/projects/{id}/metrics</span>
+                    <span class="api-desc">Get performance metrics</span>
+                </div>
+                <div class="api-row">
+                    <span class="api-meth post">POST</span>
+                    <span class="api-path">/api/v2/projects/{id}/scale</span>
+                    <span class="api-desc">Scale application resources</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="sec-line"></div>
+
+    <section>
+        <div class="wrap">
+            <div class="sec-head reveal">
+                <span class="sec-tag">Career</span>
+                <h2>Developer Career Path</h2>
+                <p>Structured learning paths from your first Hello World to leading engineering teams.</p>
+            </div>
+            <div class="career-grid">
+                <div class="career-card reveal">
+                    <div class="career-lvl"><i class="fas fa-seedling"></i></div>
+                    <h3>Beginner</h3>
+                    <p>Start your journey with fundamentals. HTML, CSS, JS basics, and version control.</p>
+                    <div class="career-skills">
+                        <span class="stack-tag">HTML/CSS</span>
+                        <span class="stack-tag">JavaScript</span>
+                        <span class="stack-tag">Git</span>
+                        <span class="stack-tag">CLI</span>
+                    </div>
+                </div>
+                <div class="career-card reveal">
+                    <div class="career-lvl"><i class="fas fa-layer-group"></i></div>
+                    <h3>Intermediate</h3>
+                    <p>Build real applications. Frameworks, databases, APIs, and deployment basics.</p>
+                    <div class="career-skills">
+                        <span class="stack-tag">React/Vue</span>
+                        <span class="stack-tag">Node.js</span>
+                        <span class="stack-tag">SQL</span>
+                        <span class="stack-tag">REST</span>
+                    </div>
+                </div>
+                <div class="career-card reveal">
+                    <div class="career-lvl"><i class="fas fa-cogs"></i></div>
+                    <h3>Advanced</h3>
+                    <p>Master architecture, performance, and scalability. System design and DevOps.</p>
+                    <div class="career-skills">
+                        <span class="stack-tag">Microservices</span>
+                        <span class="stack-tag">K8s</span>
+                        <span class="stack-tag">CI/CD</span>
+                        <span class="stack-tag">System Design</span>
+                    </div>
+                </div>
+                <div class="career-card reveal">
+                    <div class="career-lvl"><i class="fas fa-crown"></i></div>
+                    <h3>Expert</h3>
+                    <p>Lead teams, architect complex systems, and shape the future of technology.</p>
+                    <div class="career-skills">
+                        <span class="stack-tag">Architecture</span>
+                        <span class="stack-tag">Leadership</span>
+                        <span class="stack-tag">Mentoring</span>
+                        <span class="stack-tag">Open Source</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section style="background: var(--bg-elevated);">
+        <div class="wrap">
+            <div class="sec-head reveal">
+                <span class="sec-tag">Events</span>
+                <h2>Upcoming Events</h2>
+                <p>Workshops, hackathons, and conferences to level up your skills and meet fellow developers.</p>
+            </div>
+            <div class="event-list">
+                <div class="event-row reveal">
+                    <div class="event-date">
+                        <div class="d">15</div>
+                        <div class="m">Jul</div>
+                    </div>
+                    <div class="event-info">
+                        <h4>Modern React Patterns Workshop</h4>
+                        <p>Server Components, Suspense, and React 19 features hands-on</p>
+                    </div>
+                    <span class="event-tag tag-ws">Workshop</span>
+                </div>
+                <div class="event-row reveal">
+                    <div class="event-date">
+                        <div class="d">22</div>
+                        <div class="m">Jul</div>
+                    </div>
+                    <div class="event-info">
+                        <h4>Global CodeCraft Hackathon 2026</h4>
+                        <p>48-hour coding challenge with $75,000 in prizes</p>
+                    </div>
+                    <span class="event-tag tag-hack">Hackathon</span>
+                </div>
+                <div class="event-row reveal">
+                    <div class="event-date">
+                        <div class="d">05</div>
+                        <div class="m">Aug</div>
+                    </div>
+                    <div class="event-info">
+                        <h4>DevOps & Kubernetes Summit</h4>
+                        <p>Container orchestration and cloud-native architecture deep dive</p>
+                    </div>
+                    <span class="event-tag tag-conf">Conference</span>
+                </div>
+                <div class="event-row reveal">
+                    <div class="event-date">
+                        <div class="d">18</div>
+                        <div class="m">Aug</div>
+                    </div>
+                    <div class="event-info">
+                        <h4>AI for Developers Masterclass</h4>
+                        <p>Building intelligent apps with LLMs and machine learning</p>
+                    </div>
+                    <span class="event-tag tag-ws">Workshop</span>
+                </div>
+                <div class="event-row reveal">
+                    <div class="event-date">
+                        <div class="d">30</div>
+                        <div class="m">Aug</div>
+                    </div>
+                    <div class="event-info">
+                        <h4>Rust Systems Programming Bootcamp</h4>
+                        <p>From zero to production-ready systems in Rust</p>
+                    </div>
+                    <span class="event-tag tag-ws">Workshop</span>
+                </div>
+                <div class="event-row reveal">
+                    <div class="event-date">
+                        <div class="d">12</div>
+                        <div class="m">Sep</div>
+                    </div>
+                    <div class="event-info">
+                        <h4>TypeScript Advanced Patterns</h4>
+                        <p>Generics, conditional types, and type-level programming</p>
+                    </div>
+                    <span class="event-tag tag-ws">Workshop</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="sec-line"></div>
+
+    <section id="pricing">
+        <div class="wrap">
+            <div class="sec-head reveal">
+                <span class="sec-tag">Pricing</span>
+                <h2>Simple, Predictable Pricing</h2>
+                <p>Start free, upgrade when you need more. No surprises, no hidden fees.</p>
+            </div>
+            <div class="price-grid">
+                <div class="price-card reveal">
+                    <h3>Starter</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">For side projects and learning</p>
+                    <div class="amt">$0<span>/month</span></div>
+                    <ul class="price-feats">
+                        <li><i class="fas fa-check"></i> 5 Projects</li>
+                        <li><i class="fas fa-check"></i> 200GB Bandwidth</li>
+                        <li><i class="fas fa-check"></i> Community Support</li>
+                        <li><i class="fas fa-check"></i> Basic Analytics</li>
+                        <li><i class="fas fa-check"></i> Auto SSL</li>
+                        <li class="off"><i class="fas fa-times"></i> Custom Domains</li>
+                        <li class="off"><i class="fas fa-times"></i> Team Collaboration</li>
+                        <li class="off"><i class="fas fa-times"></i> Priority Support</li>
+                    </ul>
+                    <a href="#" class="btn btn-ghost" style="width: 100%; justify-content: center;">Get Started</a>
+                </div>
+                <div class="price-card popular reveal">
+                    <div class="price-badge">Most Popular</div>
+                    <h3>Pro</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">For professional developers</p>
+                    <div class="amt">$39<span>/month</span></div>
+                    <ul class="price-feats">
+                        <li><i class="fas fa-check"></i> Unlimited Projects</li>
+                        <li><i class="fas fa-check"></i> 2TB Bandwidth</li>
+                        <li><i class="fas fa-check"></i> Email Support</li>
+                        <li><i class="fas fa-check"></i> Advanced Analytics</li>
+                        <li><i class="fas fa-check"></i> Custom Domains</li>
+                        <li><i class="fas fa-check"></i> Team (10 members)</li>
+                        <li><i class="fas fa-check"></i> CI/CD Pipelines</li>
+                        <li class="off"><i class="fas fa-times"></i> Priority Support</li>
+                    </ul>
+                    <a href="#" class="btn btn-neon" style="width: 100%; justify-content: center;">Start Free Trial</a>
+                </div>
+                <div class="price-card reveal">
+                    <h3>Enterprise</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">For organizations at scale</p>
+                    <div class="amt">Custom</div>
+                    <ul class="price-feats">
+                        <li><i class="fas fa-check"></i> Unlimited Everything</li>
+                        <li><i class="fas fa-check"></i> Unlimited Bandwidth</li>
+                        <li><i class="fas fa-check"></i> 24/7 Priority Support</li>
+                        <li><i class="fas fa-check"></i> Custom Analytics</li>
+                        <li><i class="fas fa-check"></i> Unlimited Domains</li>
+                        <li><i class="fas fa-check"></i> Unlimited Team</li>
+                        <li><i class="fas fa-check"></i> Advanced CI/CD</li>
+                        <li><i class="fas fa-check"></i> Dedicated Manager</li>
+                    </ul>
+                    <a href="#" class="btn btn-ghost" style="width: 100%; justify-content: center;">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section style="background: var(--bg-elevated);">
+        <div class="wrap">
+            <div class="sec-head reveal">
+                <span class="sec-tag">Roadmap</span>
+                <h2>What's Coming Next</h2>
+                <p>Our public roadmap. See what we're building and what's on the horizon.</p>
+            </div>
+            <div class="road-wrap">
+                <div class="road-item reveal">
+                    <div class="road-dot"></div>
+                    <div class="road-content">
+                        <div class="road-date">Q1 2026</div>
+                        <h4>AI Copilot v3</h4>
+                        <p>Context-aware code generation across 60+ languages with project-wide understanding.</p>
+                        <span class="road-stat st-done">Completed</span>
+                    </div>
+                </div>
+                <div class="road-item reveal">
+                    <div class="road-dot"></div>
+                    <div class="road-content">
+                        <div class="road-date">Q2 2026</div>
+                        <h4>Edge Functions Global</h4>
+                        <p>Deploy serverless functions to 250+ edge locations with sub-5ms cold starts.</p>
+                        <span class="road-stat st-done">Completed</span>
+                    </div>
+                </div>
+                <div class="road-item reveal">
+                    <div class="road-dot"></div>
+                    <div class="road-content">
+                        <div class="road-date">Q3 2026</div>
+                        <h4>Real-time Collaboration</h4>
+                        <p>Multiplayer code editing, live pair programming, and instant preview sharing.</p>
+                        <span class="road-stat st-prog">In Progress</span>
+                    </div>
+                </div>
+                <div class="road-item reveal">
+                    <div class="road-dot"></div>
+                    <div class="road-content">
+                        <div class="road-date">Q4 2026</div>
+                        <h4>WebGPU Compute</h4>
+                        <p>GPU-accelerated computing in the browser for ML inference and graphics workloads.</p>
+                        <span class="road-stat st-next">Upcoming</span>
+                    </div>
+                </div>
+                <div class="road-item reveal">
+                    <div class="road-dot"></div>
+                    <div class="road-content">
+                        <div class="road-date">Q1 2027</div>
+                        <h4>Quantum-Ready Security</h4>
+                        <p>Post-quantum cryptography for future-proof data protection and compliance.</p>
+                        <span class="road-stat st-next">Upcoming</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="sec-line"></div>
+
+    <section id="blog">
+        <div class="wrap">
+            <div class="sec-head reveal">
+                <span class="sec-tag">Blog</span>
+                <h2>Latest from the Blog</h2>
+                <p>Tutorials, insights, and updates from the CodeCraft team and community.</p>
+            </div>
+            <div class="blog-grid">
+                <div class="blog-card reveal">
+                    <div class="blog-img" style="background: linear-gradient(135deg, #8338ec 0%, #3a86ff 100%);">
+                        <i class="fas fa-brain"></i>
+                        <span class="blog-cat">AI & ML</span>
+                    </div>
+                    <div class="blog-body">
+                        <div class="blog-meta">
+                            <span><i class="fas fa-calendar"></i> Jun 28, 2026</span>
+                            <span><i class="fas fa-clock"></i> 8 min</span>
+                        </div>
+                        <h3>Building AI-Powered Apps with CodeCraft</h3>
+                        <p>Integrate large language models into your web apps using our new AI SDK and edge functions.</p>
+                        <a href="#" class="read-link">Read More <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <div class="blog-card reveal">
+                    <div class="blog-img" style="background: linear-gradient(135deg, #00f5d4 0%, #00bbf9 100%);">
+                        <i class="fas fa-server"></i>
+                        <span class="blog-cat">Infrastructure</span>
+                    </div>
+                    <div class="blog-body">
+                        <div class="blog-meta">
+                            <span><i class="fas fa-calendar"></i> Jun 25, 2026</span>
+                            <span><i class="fas fa-clock"></i> 12 min</span>
+                        </div>
+                        <h3>The Future of Edge Computing</h3>
+                        <p>How edge functions are redefining serverless architecture and what it means for developers.</p>
+                        <a href="#" class="read-link">Read More <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <div class="blog-card reveal">
+                    <div class="blog-img" style="background: linear-gradient(135deg, #ffbe0b 0%, #ff006e 100%);">
+                        <i class="fas fa-shield-halved"></i>
+                        <span class="blog-cat">Security</span>
+                    </div>
+                    <div class="blog-body">
+                        <div class="blog-meta">
+                            <span><i class="fas fa-calendar"></i> Jun 22, 2026</span>
+                            <span><i class="fas fa-clock"></i> 6 min</span>
+                        </div>
+                        <h3>Zero-Trust Architecture in Web Apps</h3>
+                        <p>Implementing zero-trust security patterns in your CodeCraft deployments effectively.</p>
+                        <a href="#" class="read-link">Read More <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section style="background: var(--bg-elevated);">
+        <div class="wrap">
+            <div class="sec-head reveal">
+                <span class="sec-tag">FAQ</span>
+                <h2>Frequently Asked Questions</h2>
+                <p>Everything you need to know. Can't find your answer? Our support team is here to help.</p>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item reveal">
+                    <div class="faq-q" onclick="toggleFaq(this)">
+                        What frameworks does CodeCraft support?
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-a">
+                        <p>CodeCraft supports virtually every modern framework including React, Vue, Angular, Svelte, Next.js, Nuxt, Astro, Remix, and more. Backend frameworks include Express, Fastify, Django, FastAPI, Ruby on Rails, Laravel, and Go-based frameworks.</p>
+                    </div>
+                </div>
+                <div class="faq-item reveal">
+                    <div class="faq-q" onclick="toggleFaq(this)">
+                        Is there a free tier available?
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-a">
+                        <p>Yes! Our Starter plan is completely free forever. You get 5 projects, 200GB bandwidth, community support, basic analytics, and automatic SSL. Perfect for side projects, portfolios, and learning.</p>
+                    </div>
+                </div>
+                <div class="faq-item reveal">
+                    <div class="faq-q" onclick="toggleFaq(this)">
+                        How does the AI copilot work?
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-a">
+                        <p>Our AI copilot analyzes your entire codebase in real-time to provide context-aware suggestions. It understands your project structure, dependencies, and coding patterns to generate relevant completions, refactor suggestions, and bug predictions.</p>
+                    </div>
+                </div>
+                <div class="faq-item reveal">
+                    <div class="faq-q" onclick="toggleFaq(this)">
+                        Can I use my own custom domain?
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-a">
+                        <p>Custom domains are available on Pro and Enterprise plans. Add your domain in the dashboard, update your DNS records, and we handle SSL provisioning automatically with zero configuration.</p>
+                    </div>
+                </div>
+                <div class="faq-item reveal">
+                    <div class="faq-q" onclick="toggleFaq(this)">
+                        What happens if I exceed my bandwidth limit?
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-a">
+                        <p>We notify you when you approach your limit. You can upgrade your plan or purchase additional bandwidth at $0.08 per GB. Your projects will never go offline unexpectedly.</p>
+                    </div>
+                </div>
+                <div class="faq-item reveal">
+                    <div class="faq-q" onclick="toggleFaq(this)">
+                        Is my data secure on CodeCraft?
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-a">
+                        <p>Absolutely. We're SOC 2 Type II certified, ISO 27001 compliant, and GDPR ready. All data is encrypted with AES-256 at rest and TLS 1.3 in transit. We never access your source code.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="wrap">
+            <div class="sec-head reveal">
+                <span class="sec-tag">Open Source</span>
+                <h2>Contribute to CodeCraft</h2>
+                <p>CodeCraft is built by developers, for developers. Here's how you can get involved.</p>
+            </div>
+            <div class="contrib-grid">
+                <div class="contrib-card reveal">
+                    <div class="ico"><i class="fas fa-code"></i></div>
+                    <h3>Write Code</h3>
+                    <p>Contribute to our open-source SDKs, CLI tools, and platform features.</p>
+                    <a href="#" class="btn btn-ghost">View GitHub</a>
+                </div>
+                <div class="contrib-card reveal">
+                    <div class="ico"><i class="fas fa-bug"></i></div>
+                    <h3>Report Bugs</h3>
+                    <p>Found an issue? Report it with detailed reproduction steps.</p>
+                    <a href="#" class="btn btn-ghost">Report Issue</a>
+                </div>
+                <div class="contrib-card reveal">
+                    <div class="ico"><i class="fas fa-book"></i></div>
+                    <h3>Improve Docs</h3>
+                    <p>Help us make documentation better. Fix typos, add examples.</p>
+                    <a href="#" class="btn btn-ghost">Edit Docs</a>
+                </div>
+                <div class="contrib-card reveal">
+                    <div class="ico"><i class="fas fa-comments"></i></div>
+                    <h3>Answer Questions</h3>
+                    <p>Help fellow developers in our forums, Discord, and Stack Overflow.</p>
+                    <a href="#" class="btn btn-ghost">Join Discord</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section style="background: var(--bg-elevated);">
+        <div class="wrap">
+            <div class="sec-head reveal">
+                <span class="sec-tag">Partners</span>
+                <h2>Trusted by Industry Leaders</h2>
+                <p>Join thousands of companies shipping with CodeCraft every day.</p>
+            </div>
+            <div class="partner-row reveal">
+                <div class="partner-logo"><i class="fab fa-google"></i></div>
+                <div class="partner-logo"><i class="fab fa-microsoft"></i></div>
+                <div class="partner-logo"><i class="fab fa-amazon"></i></div>
+                <div class="partner-logo"><i class="fab fa-meta"></i></div>
+                <div class="partner-logo"><i class="fab fa-spotify"></i></div>
+                <div class="partner-logo"><i class="fab fa-stripe"></i></div>
+                <div class="partner-logo"><i class="fab fa-shopify"></i></div>
+                <div class="partner-logo"><i class="fab fa-airbnb"></i></div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="wrap">
+            <div class="news-sec reveal">
+                <div class="news-inner">
+                    <h2>Stay in the Loop</h2>
+                    <p>Get the latest updates, tutorials, and exclusive content delivered to your inbox. No spam, ever.</p>
+                    <form class="news-form" onsubmit="event.preventDefault(); alert('Subscribed!');">
+                        <input type="email" placeholder="you@example.com" required>
+                        <button type="submit" class="btn btn-neon">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="foot">
+        <div class="foot-grid">
+            <div class="foot-brand">
+                <a href="#" class="brand">
+                    <div class="brand-mark"><i class="fas fa-terminal"></i></div>
+                    CodeCraft
+                </a>
+                <p>The developer platform that turns ideas into production. Built with passion by developers worldwide.</p>
+                <div class="soc-links">
+                    <a href="#"><i class="fab fa-github"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-discord"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+            <div class="foot-links">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#">Pricing</a></li>
+                    <li><a href="#">Changelog</a></li>
+                    <li><a href="#">Roadmap</a></li>
+                    <li><a href="#">Status</a></li>
+                </ul>
+            </div>
+            <div class="foot-links">
+                <h4>Developers</h4>
+                <ul>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">API Reference</a></li>
+                    <li><a href="#">SDKs</a></li>
+                    <li><a href="#">CLI</a></li>
+                    <li><a href="#">Community</a></li>
+                </ul>
+            </div>
+            <div class="foot-links">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Press</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="foot-links">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                    <li><a href="#">Security</a></li>
+                    <li><a href="#">Compliance</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="foot-bot">
+            <p>2026 CodeCraft Inc. All rights reserved.</p>
+            <p>Built with <i class="fas fa-heart" style="color: var(--magenta);"></i> by developers, for developers</p>
+        </div>
+    </footer>
+
+    <button class="scroll-up" id="scrollUp" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // Mobile menu
+        function toggleMob() {
+            document.getElementById('mobMenu').classList.toggle('open');
+            document.getElementById('mobOverlay').classList.toggle('open');
+        }
+
+        // Navbar scroll
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            const scrollUp = document.getElementById('scrollUp');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+            if (window.scrollY > 500) {
+                scrollUp.classList.add('vis');
+            } else {
+                scrollUp.classList.remove('vis');
+            }
+        });
+
+        // Cursor glow
+        document.addEventListener('mousemove', function(e) {
+            const glow = document.getElementById('cursorGlow');
+            glow.style.left = e.clientX + 'px';
+            glow.style.top = e.clientY + 'px';
+        });
+
+        // Reveal on scroll
+        const reveals = document.querySelectorAll('.reveal');
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('show');
+                }
+            });
+        }, { threshold: 0.1 });
+        reveals.forEach(el => obs.observe(el));
+
+        // Code tabs
+        function switchPlay(btn, panelId) {
+            document.querySelectorAll('.play-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.play-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(panelId).classList.add('active');
+        }
+
+        // FAQ toggle
+        function toggleFaq(el) {
+            const item = el.parentElement;
+            const open = item.classList.contains('open');
+            document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+            if (!open) item.classList.add('open');
+        }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href !== '#') {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
